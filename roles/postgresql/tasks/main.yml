@@ -1,0 +1,54 @@
+---
+# tasks file for postgresql
+- name: Install required dependency packages
+  apt: 
+    pkg:
+      - ca-certificates
+      - wget
+      - curl
+      - gpg
+      - gnupg2
+      - software-properties-common
+      - apt-transport-https
+    state: latest
+
+- name: Add PostgreSQL GPG apt Key
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    keyring: /etc/apt/trusted.gpg.d/postgresql.gpg
+    state: present
+
+- name: Add PostgreSQL Repository 
+  apt_repository:
+     repo: deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main
+     state: present
+
+- name: Update all packages
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+
+- name: Install PostgreSQL
+  apt:
+    pkg:
+      - "postgresql-{{ postgresql_ver }}" 
+      - "postgresql-client-{{ postgresql_ver }}"
+  notify:
+    - Enable PostgreSQL service  
+
+- name: Create directory for new data
+  ansible.builtin.file:
+    path: /opt/postgresql
+    state: directory
+    owner: postgres
+    group: postgres
+
+- name: Change data directory
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ postgresql_ver }}/main/postgresql.conf"
+    line: data_directory = '{{ data_directory }}'
+    regexp: ^data_directory
+  notify:
+    - Init database
+    - Restart service  
+

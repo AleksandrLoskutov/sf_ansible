@@ -1,0 +1,66 @@
+---
+# tasks file for docker
+- name: Install required packages on CentOS
+  become: yes
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Add Docker repo on CentOS
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+  when: ansible_os_family == "RedHat"
+
+- name: Install Docker on CentOS
+  package:
+    name: docker-ce
+    state: latest
+  when: ansible_os_family == "RedHat"
+
+- name: Install aptitude on Ubuntu
+  apt:
+    name: aptitude
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Install required system packages on Ubuntu
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+  when: ansible_os_family == "Debian"      
+
+- name: Add Docker GPG apt Key on Ubuntu
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add Docker Repository on Ubuntu
+  apt_repository:
+     repo: deb https://download.docker.com/linux/ubuntu focal stable
+     state: present
+  when: ansible_os_family == "Debian"
+
+- name: Update apt and install docker-ce on Ubuntu
+  apt:
+    name: docker-ce
+    state: latest
+  when: ansible_os_family == "Debian"
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes

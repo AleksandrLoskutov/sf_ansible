@@ -1,0 +1,17 @@
+---
+# handlers file for postgresql
+- name: Init database
+  command: runuser -l postgres -c '/usr/lib/postgresql/{{ postgresql_ver }}/bin/initdb -D {{ data_directory }}'
+  become: yes
+  become_user: root
+
+- name: Restart service
+  service:
+    name: postgresql
+    state: restarted
+
+- name: Enable service
+  service:
+    name: postgresql
+    enabled: yes    
+    
